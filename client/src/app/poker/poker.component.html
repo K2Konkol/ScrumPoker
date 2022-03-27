@@ -1,0 +1,11 @@
+<p>poker works!</p>
+
+<button class="button" (click)="updateStatus()">Say hello!</button>
+
+<div *ngIf="play$">
+  <ul>
+    <li *ngFor="let player of play$ | async ">
+  {{ player.player }}
+    </li>
+  </ul>
+</div>

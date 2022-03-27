@@ -15,10 +15,12 @@ import java.util.Map;
 @Configuration
 public class ReactiveWebSocketConfig {
 
+    @Autowired
+    @Qualifier("PokerRoundHandler")
+    WebSocketHandler webSocketHandler;
+
     @Bean
-    public HandlerMapping webSocketHandlerMapping(
-            @Qualifier("ReactiveWebSocketHandler") WebSocketHandler webSocketHandler
-    ) {
+    public HandlerMapping webSocketHandlerMapping() {
         Map<String, WebSocketHandler> map = new HashMap<>();
         map.put("/event-emitter", webSocketHandler);
 
