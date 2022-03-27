@@ -10,31 +10,20 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 @Component("PokerRoundHandler")
 public class PokerRoundHandler implements WebSocketHandler {
 
     private static final ObjectMapper json = new ObjectMapper();
-
-    private final List<PokerRound> pokerList = new ArrayList<>();
-
     private final Map<String, PokerRound> pokerMap = new HashMap<>();
 
     private PokerRound readValue(String round) {
         PokerRound value = new PokerRound();
         try {
             value = json.readValue(round, PokerRound.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return value;
-    }
-
-    private String writeValue(PokerRound round) {
-        String value = "";
-        try {
-            value = json.writeValueAsString(round);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -52,22 +41,20 @@ public class PokerRoundHandler implements WebSocketHandler {
     }
 
     private Flux<List<PokerRound>> pokerMono = Flux.generate(sink -> {
-        sink.next(pokerList);
+        sink.next(pokerMap.values().stream().toList());
             });
 
-
-    private Flux<List<PokerRound>> intervalFlux = Flux.interval(Duration.ofMillis(500))
+    private Flux<List<PokerRound>> intervalFlux = Flux.interval(Duration.ofMillis(25))
             .zipWith(pokerMono, (time, element) -> element);
-
 
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-
-        Mono.just(session.getId()).log().subscribe();
-
         return session.send(intervalFlux.map(n -> writeArray(n)).map(session::textMessage))
                 .and(session.receive()
                         .map(WebSocketMessage::getPayloadAsText).log()
-                .map(round -> readValue(round)).map(pokerList::add));
+                .map(round -> readValue(round))
+                        .map(pokerRound -> {pokerMap.put(session.getId(), pokerRound);
+                            return Mono.empty();
+                        })).doOnTerminate(() -> pokerMap.remove(session.getId()));
     }
 }
