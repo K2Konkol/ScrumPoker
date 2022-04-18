@@ -1,11 +1,37 @@
-<p>poker works!</p>
+<h1>Scrum Poker</h1>
 
+<label for="player-name">Enter Your name:</label>
+<input id="player-name" [(ngModel)]="player" placeholder="name">
 <button class="button" (click)="updateStatus()">Say hello!</button>
 
-<div *ngIf="play$">
+<div class="play" *ngIf="player">
   <ul>
-    <li *ngFor="let player of play$ | async ">
-  {{ player.player }}
+    <li class="player" *ngFor="let player of play$ | async ">
+    <div class="flip-card" *ngIf="play$">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p>{{ player.player }}</p>
+            <div *ngIf="ready$ | async"><p>{{ player.rank }}</p></div>
+          </div>
+        </div>
+      </div>
     </li>
   </ul>
+
+  <div>
+    <ul>
+      <li class="card" *ngFor="let card of deck">
+        <button type="button" (click)="onSelect(card.valueOf())">
+          <div class="flip-card" *ngIf="play$">
+            <div class="flip-card-inner">
+              <div [ngClass]="rank === card.valueOf() ? 'flip-card-front' : 'flip-card-back'">
+                <h1>{{card}}</h1>
+              </div>
+            </div>
+          </div>
+        </button>
+      </li>
+    </ul>
+  </div>
 </div>
+
