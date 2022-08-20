@@ -8,7 +8,7 @@ import { Message } from "./message"
 })
 
 export class DataService {
-  private socket$: WebSocketSubject<Message[]> = webSocket('ws://localhost:8080/event-emitter');
+  private socket$: WebSocketSubject<Message[]> = webSocket('ws://localhost:8080/play');
 
   constructor() { }
 
